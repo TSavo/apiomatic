@@ -15,25 +15,27 @@ import com.tsavo.apiomatic.annotation.Null;
 import com.tsavo.apiomatic.annotation.Optional;
 
 public class TypeDefinitionFactory {
-	public static TypeDefinition getTypeDefinition(Class<?> clazz, Annotation[] someAnnotations, Type aType) {
+	public static TypeDefinition getTypeDefinition(final Class<?> clazz, final Annotation[] someAnnotations, final Type aType) {
 		TypeDefinition type;
 		if (clazz.equals(String.class)) {
 			return new StringType();
 		}
-		if (clazz.equals(Integer.class) || clazz.equals(BigInteger.class)) {
+		if (clazz.equals(Integer.class) || clazz.equals(Long.class) || clazz.equals(Short.class) || clazz.equals(BigInteger.class) || clazz.getName().equals("int") || clazz.getName().equals("short") || clazz.getName().equals("long")) {
 			return new IntegerType();
 		}
-		if (clazz.equals(Long.class) || clazz.equals(Double.class)) {
+		if (clazz.equals(Float.class) || clazz.equals(Double.class) || clazz.getName().equals("float") || clazz.getName().equals("double")) {
 			return new NumberType();
 		}
 		if (clazz.equals(List.class) || clazz.equals(Set.class)) {
-			return new ArrayType(getTypeDefinition(((ParameterizedType) aType).getActualTypeArguments()[0].getClass(), clazz.getAnnotations(), clazz.getTypeParameters()[0]));
+			return new ArrayType(TypeDefinitionFactory.getTypeDefinition(((ParameterizedType) aType).getActualTypeArguments()[0].getClass(), clazz.getAnnotations(), clazz.getTypeParameters()[0]));
 		}
 		type = new ObjectType(clazz);
-		outer: for (Field f : clazz.getDeclaredFields()) {
+		outer: for (final Field f : clazz.getDeclaredFields()) {
+			if (f.toString().contains("static")) {
+				continue;
+			}
 			String name = f.getName();
-			TypeDefinition innerType = getTypeDefinition(f.getClass(), f.getAnnotations(), f.getType());
-			for (Annotation a : f.getAnnotations()) {
+			for (final Annotation a : f.getAnnotations()) {
 				if (a instanceof JsonProperty) {
 					name = ((JsonProperty) a).value();
 				}
@@ -41,12 +43,15 @@ public class TypeDefinitionFactory {
 					continue outer;
 				}
 			}
+			final TypeDefinition innerType = TypeDefinitionFactory.getTypeDefinition(f.getType(), f.getAnnotations(), f.getType());
 			((ObjectType) type).addProperty(name, innerType);
 		}
-		for (Annotation annotation : someAnnotations) {
+		for (final Annotation annotation : someAnnotations) {
 			if (annotation instanceof Null) {
 				type = new NullType();
 			}
+		}
+		for (final Annotation annotation : someAnnotations) {
 			if (annotation instanceof Optional) {
 				type.setOptional(((Optional) annotation).optional());
 			}
