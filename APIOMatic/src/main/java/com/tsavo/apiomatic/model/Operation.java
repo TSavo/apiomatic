@@ -10,8 +10,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.tsavo.apiomatic.annotation.Documentation;
 
+@JsonInclude(Include.NON_NULL)
 public class Operation {
 	public TypeDefinition getBody() {
 		return body;
@@ -86,7 +89,7 @@ public class Operation {
 	TypeDefinition response;
 	List<String> urls;
 	String documentation;
-
+	
 	public String getDocumentation() {
 		return documentation;
 	}
@@ -102,13 +105,13 @@ public class Operation {
 				final RequestMapping requestMapping = (RequestMapping) annotation;
 				urls = Arrays.asList(requestMapping.value());
 				methods = Arrays.asList(requestMapping.method());
-				produces = Arrays.asList(requestMapping.produces());
-				consumes = Arrays.asList(requestMapping.consumes());
+				// produces = Arrays.asList(requestMapping.produces());
+				// consumes = Arrays.asList(requestMapping.consumes());
 				headers = Arrays.asList(requestMapping.headers());
 				params = Arrays.asList(requestMapping.params());
 				continue;
 			}
-			if(annotation instanceof Documentation){
+			if (annotation instanceof Documentation) {
 				documentation = ((Documentation) annotation).value();
 			}
 		}
@@ -124,6 +127,6 @@ public class Operation {
 				}
 			}
 		}
-		response = TypeDefinitionFactory.getTypeDefinition(aMethod.getReturnType(), aMethod.getAnnotations(), aMethod.getReturnType());
+		response = TypeDefinitionFactory.getTypeDefinition(aMethod.getReturnType(), aMethod.getAnnotations(), aMethod.getGenericReturnType());
 	}
 }

@@ -49,7 +49,7 @@ public abstract class TypeDefinition implements Serializable {
 	public boolean optional = false;
 
 	public String type;
-
+	
 	public TypeDefinition(final Type aType) {
 		type = aType.toString();
 	}
@@ -69,5 +69,6 @@ public abstract class TypeDefinition implements Serializable {
 	public void setType(final String type) {
 		this.type = type;
 	}
+
 
 }

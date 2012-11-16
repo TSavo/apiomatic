@@ -1,6 +1,6 @@
 package com.tsavo.apiomatic.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ArrayType extends TypeDefinition {
 	/**
