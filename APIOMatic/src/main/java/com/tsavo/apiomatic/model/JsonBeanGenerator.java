@@ -153,13 +153,13 @@ public class JsonBeanGenerator {
 		JMethod getter = aClass.method(JMod.PUBLIC, aType, "get" + capitalize(sanitizeName(aName)));
 		getter.body()._return(field);
 		JMethod setter = aClass.method(JMod.PUBLIC, void.class, "set" + capitalize(sanitizeName(aName)));
-		JVar var = setter.param(aType, generateParameterName(aName, aType));
+		JVar var = setter.param(JMod.FINAL, aType, generateParameterName(aName, aType));
 		setter.body().assign(JExpr._this().ref(field), var);
 	}
 
 	private static String generateParameterName(String aParamName, JClass aType) {
 		String name = capitalize(sanitizeName(aParamName));
-		if (aType.name().startsWith("List")) {
+		if (aType.name().startsWith("List") || aType.name().startsWith("Set")) {
 			return "some" + name;
 		}
 		if (name.startsWith("A") || name.startsWith("E") || name.startsWith("I") || name.startsWith("O") || name.startsWith("U")) {
