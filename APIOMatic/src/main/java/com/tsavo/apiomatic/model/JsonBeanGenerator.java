@@ -110,10 +110,12 @@ public class JsonBeanGenerator {
 
 	private static void addBeanField(JDefinedClass aClass, String aName, JClass aType) {
 		JFieldVar field = aClass.field(JMod.PRIVATE, aType, sanitizeName(aName));
-		JAnnotationUse property = field.annotate(JsonProperty.class);
-		property.param("value", aName);
-		JMethod m = aClass.method(JMod.PUBLIC, aType, "get" + capitalize(sanitizeName(aName)));
-		m.body()._return(field);
+		if(!sanitizeName(aName).equals(aName)){
+			JAnnotationUse property = field.annotate(JsonProperty.class);
+			property.param("value", aName);
+		}
+		JMethod getter = aClass.method(JMod.PUBLIC, aType, "get" + capitalize(sanitizeName(aName)));
+		getter.body()._return(field);
 		JMethod setter = aClass.method(JMod.PUBLIC, void.class, "set" + capitalize(sanitizeName(aName)));
 		JVar var = setter.param(aType, generateParameterName(aName, aType));
 		setter.body().assign(JExpr._this().ref(field), var);
