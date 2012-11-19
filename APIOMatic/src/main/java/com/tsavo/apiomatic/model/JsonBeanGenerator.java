@@ -12,6 +12,7 @@ import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.math.RandomUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,7 +39,7 @@ public class JsonBeanGenerator {
 
 	public void test() throws Exception {
 		ObjectMapper objectMapper = new ObjectMapper();
-		makeClassFromJson(objectMapper.readValue(System.in, JsonNode.class), new File("c:\\tmp"));
+		makeClassFromJson(objectMapper.readValue(System.in, JsonNode.class), new File("c:\\temp"));
 	}
 
 	public JDefinedClass makeClassFromJson(JsonNode aNode, File aDestination) throws JClassAlreadyExistsException, IOException {
@@ -61,6 +62,12 @@ public class JsonBeanGenerator {
 		Iterator<Entry<String, JsonNode>> i = aNode.fields();
 		JDefinedClass newClass = codeModel._class(capitalize(aClassName));
 		newClass._implements(Serializable.class);
+		if (aNode.has("abstract") && aNode.get("abstract").asBoolean()) {
+			JAnnotationUse typeInfo = newClass.annotate(JsonTypeInfo.class);
+			typeInfo.param("use", JsonTypeInfo.Id.CLASS);
+			typeInfo.param("include", JsonTypeInfo.As.PROPERTY);
+			typeInfo.param("property", "__class__");
+		}
 		while (i.hasNext()) {
 			Entry<String, JsonNode> entry = i.next();
 			addBeanField(newClass, entry.getKey(), determineType(entry.getValue(), entry.getKey(), capitalize(aClassName)));
@@ -110,7 +117,7 @@ public class JsonBeanGenerator {
 
 	private static void addBeanField(JDefinedClass aClass, String aName, JClass aType) {
 		JFieldVar field = aClass.field(JMod.PRIVATE, aType, sanitizeName(aName));
-		if(!sanitizeName(aName).equals(aName)){
+		if (!sanitizeName(aName).equals(aName)) {
 			JAnnotationUse property = field.annotate(JsonProperty.class);
 			property.param("value", aName);
 		}
@@ -133,7 +140,9 @@ public class JsonBeanGenerator {
 	}
 
 	private static String sanitizeName(String aString) {
-		return WordUtils.uncapitalize(aString.replaceAll("\\_", "").replaceAll("class", "clazz"));
+		String name = WordUtils.uncapitalize(aString.replaceAll("\\_", "").replaceAll("class", "clazz"));
+		String[] words = name.split(":");
+		return words[words.length - 1];
 	}
 
 	private static String capitalize(String aString) {
