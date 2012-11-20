@@ -4,8 +4,8 @@ public class Column {
 
 	String name;
 	String type;
-	String notNull;
-	String defaultValue;
+	String notNull = null;
+	String defaultValue = null;
 
 	public Column(String aName, String aType) {
 		name = aName;
