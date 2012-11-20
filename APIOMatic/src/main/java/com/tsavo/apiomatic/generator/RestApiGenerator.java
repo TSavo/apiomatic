@@ -1,4 +1,4 @@
-package com.tsavo.apiomatic.model;
+package com.tsavo.apiomatic.generator;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -9,14 +9,15 @@ import java.util.List;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.tsavo.apiomatic.annotation.Documentation;
+import com.tsavo.apiomatic.generator.model.Operation;
 
 public class RestApiGenerator {
 	public List<String> urls;
 	public String documentation;
 	public String packageName;
-	public List<Operation> apiList = new ArrayList();
+	public List<Operation> apiList = new ArrayList<>();
 
-	public RestApiGenerator(final Class aClazz) {
+	public RestApiGenerator(final Class<?> aClazz) {
 			Package aPackage = aClazz.getPackage();
 			packageName = aPackage.getName();
 			final Annotation[] classAnnotations = aClazz.getAnnotations();

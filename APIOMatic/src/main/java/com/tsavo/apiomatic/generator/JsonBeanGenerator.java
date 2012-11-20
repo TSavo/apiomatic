@@ -1,4 +1,4 @@
-package com.tsavo.apiomatic.model;
+package com.tsavo.apiomatic.generator;
 
 import static com.sun.codemodel.JExpr._new;
 import static com.sun.codemodel.JExpr._this;
@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -67,15 +66,17 @@ public class JsonBeanGenerator {
 	public JDefinedClass makeClassFromJson(String aClassName, JsonNode aNode, File aDestination) throws JClassAlreadyExistsException, IOException {
 		JDefinedClass myClass = makeClass(aClassName, aNode);
 		codeModel.build(aDestination);
-		FileWriter writer = new FileWriter(new File("c:\\temp\\migration.sql"));
-		for (Table t : tables.values()) {
-			t.write(writer);
+		if (aNode.has("__persistent__") && aNode.get("__persistent__").asBoolean()) {
+			FileWriter writer = new FileWriter(new File("c:\\temp\\migration.sql"));
+			for (Table t : tables.values()) {
+				t.write(writer);
+			}
+			for (Index i : indexes.values()) {
+				i.write(writer);
+			}
+			writer.close();
+			System.out.println("migration.sql");
 		}
-		for (Index i : indexes.values()) {
-			i.write(writer);
-		}
-		writer.close();
-		System.out.println("migration.sql");
 		return myClass;
 	}
 

@@ -1,4 +1,4 @@
-package com.tsavo.apiomatic.model;
+package com.tsavo.apiomatic.generator.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
