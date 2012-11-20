@@ -116,7 +116,7 @@ public class JsonBeanGenerator {
 			JClass clazz = determineType(entry.getValue(), entry.getKey(), capitalize(aClassName));
 			JFieldVar field = addBeanField(newClass, entry.getKey(), clazz, persistent);
 			Column c = table.addColumn(field);
-			if (entry.getValue().isObject()) {
+			if (persistent && entry.getValue().isObject()) {
 				indexes.put(table.name + "_" + field.name(), new Index(table, c, clazz));
 			}
 		}
