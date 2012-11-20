@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.math.RandomUtils;
@@ -25,6 +28,7 @@ import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JExpr;
+import com.sun.codemodel.JExpression;
 import com.sun.codemodel.JFieldRef;
 import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JInvocation;
@@ -76,6 +80,11 @@ public class JsonBeanGenerator {
 			typeInfo.param("use", JsonTypeInfo.Id.CLASS);
 			typeInfo.param("include", JsonTypeInfo.As.PROPERTY);
 			typeInfo.param("property", "__class__");
+		}
+		if(aNode.has("__persistent__")){
+			if(aNode.get("__persistent__").booleanValue()){
+				newClass.annotate(Entity.class);
+			}
 		}
 		while (i.hasNext()) {
 			Entry<String, JsonNode> entry = i.next();
@@ -145,7 +154,15 @@ public class JsonBeanGenerator {
 		if (sanitizeName(aName).toLowerCase().equals("clazz")) {
 			return;
 		}
+		if (sanitizeName(aName).toLowerCase().equals("persistent")) {
+			return;
+		}
+		
 		JFieldVar field = aClass.field(JMod.PRIVATE, aType, sanitizeName(aName));
+		if(sanitizeName(aName).toLowerCase().equals("id")){
+			field.annotate(Id.class);
+			field.init(JExpr.direct("UUID.randomUUID().toString()"));
+		}
 		if (!sanitizeName(aName).equals(aName)) {
 			JAnnotationUse property = field.annotate(JsonProperty.class);
 			property.param("value", aName);
