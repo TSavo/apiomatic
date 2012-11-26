@@ -18,7 +18,7 @@ public class RestCommand<Request, Response> {
 	private HttpHeaderDelegate headerDelegate = new NoAuthHeaderDelegate();
 
 	public RestCommand() {
-		restTemplate = new RestTemplate();
+		restTemplate=new RestTemplate(new HttpComponentsClientHttpRequestFactory(new DefaultHttpClient()));
 	}
 
 	public RestCommand(final String aUserName, final String aPassword, final String anAuthDomain, int aPort) {
