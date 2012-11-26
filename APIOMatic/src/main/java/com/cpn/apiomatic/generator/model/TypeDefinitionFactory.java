@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.Temporal;
+
 import org.reflections.Reflections;
 
 import com.cpn.apiomatic.annotation.Null;
@@ -57,6 +59,10 @@ public class TypeDefinitionFactory {
 				}
 				if (a instanceof JsonIgnore) {
 					continue outer;
+				}
+				if(a instanceof Temporal){
+				     oType.addProperty(name, oType);
+				     continue outer;
 				}
 			}
 			final TypeDefinition innerType = TypeDefinitionFactory.getTypeDefinition(f.getType(), f.getAnnotations(), f.getGenericType());
