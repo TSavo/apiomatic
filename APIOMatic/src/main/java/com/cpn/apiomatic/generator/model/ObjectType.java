@@ -1,8 +1,8 @@
 package com.cpn.apiomatic.generator.model;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -24,7 +24,7 @@ public class ObjectType extends TypeDefinition {
 	public void setClazz(String clazz) {
 		this.clazz = clazz;
 	}
-	Map<String, TypeDefinition> properties = new HashMap<>();
+	List<TypeDefinition> properties = new ArrayList<>();
 	public Set<TypeDefinition> subclasses = new HashSet<>();
 	public boolean abstractClass = false;
 	
@@ -41,15 +41,15 @@ public class ObjectType extends TypeDefinition {
 		clazz = aClazz.getName();
 	}
 
-	public void addProperty(final String aKey, final TypeDefinition aTypeDef) {
-		properties.put(aKey, aTypeDef);
+	public void addProperty(final TypeDefinition aTypeDef) {
+		properties.add(aTypeDef);
 	}
 
-	public Map<String, TypeDefinition> getProperties() {
+	public List<TypeDefinition> getProperties() {
 		return properties;
 	}
 
-	public void setProperties(final Map<String, TypeDefinition> properties) {
+	public void setProperties(final List<TypeDefinition> properties) {
 		this.properties = properties;
 	}
 	public Set<TypeDefinition> getSubclasses() {

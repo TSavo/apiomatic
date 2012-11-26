@@ -2,6 +2,10 @@ package com.cpn.apiomatic.generator.model;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonInclude(Include.NON_NULL)
 public abstract class TypeDefinition implements Serializable {
 	public enum Type {
 		ARRAY {
@@ -49,7 +53,16 @@ public abstract class TypeDefinition implements Serializable {
 	public boolean optional = false;
 
 	public String type;
+	public String name;
 	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public TypeDefinition(final Type aType) {
 		type = aType.toString();
 	}

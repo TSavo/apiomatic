@@ -60,7 +60,8 @@ public class TypeDefinitionFactory {
 				}
 			}
 			final TypeDefinition innerType = TypeDefinitionFactory.getTypeDefinition(f.getType(), f.getAnnotations(), f.getGenericType());
-			oType.addProperty(name, innerType);
+			innerType.setName(name);
+			oType.addProperty(innerType);
 		}
 		if (clazz.getPackage() != null) {
 			Reflections reflections = new Reflections(clazz.getPackage().getName());
@@ -77,7 +78,8 @@ public class TypeDefinitionFactory {
 				StringType stringType = new StringType();
 				stringType.setOptional(false);
 				stringType.setRequiredValue(clazz.getCanonicalName());
-				oType.addProperty(typeInfo.property(), stringType);
+				stringType.setName(typeInfo.property());
+				oType.addProperty(stringType);
 			}
 		}
 		for (final Annotation annotation : someAnnotations) {
