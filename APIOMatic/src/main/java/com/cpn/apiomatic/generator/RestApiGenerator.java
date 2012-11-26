@@ -32,8 +32,8 @@ public class RestApiGenerator {
 		}
 		Method[] aMethods = aClazz.getMethods();
 		for (final Method aMethod : aMethods) {
-			for (final Annotation annotation : aMethod.getAnnotations()) {
-				if (annotation instanceof RequestMapping) {
+			for (final Annotation annotation : aMethod.getAnnotations() ) {
+				if (annotation instanceof RequestMapping && !aMethod.getReturnType().equals(RestApiGenerator.class)) {
 					apiList.add(new Operation(aMethod));
 					break;
 				}
