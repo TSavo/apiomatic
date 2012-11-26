@@ -24,6 +24,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public class TypeDefinitionFactory {
 	public static TypeDefinition getTypeDefinition(final Class<?> clazz, final Annotation[] someAnnotations, final Type aType) {
 		TypeDefinition type;
+		if(clazz.equals(void.class)){
+			return null;
+		}
 		if (clazz.equals(String.class)) {
 			return new StringType();
 		}
@@ -54,11 +57,13 @@ public class TypeDefinitionFactory {
 
 			String name = f.getName();
 			for (final Annotation a : f.getAnnotations()) {
-				if (a instanceof JsonProperty) {
-					name = ((JsonProperty) a).value();
-				}
 				if (a instanceof JsonIgnore) {
 					continue outer;
+				}
+			}
+			for (final Annotation a : f.getAnnotations()) {
+				if (a instanceof JsonProperty) {
+					name = ((JsonProperty) a).value();
 				}
 				if (a instanceof Temporal) {
 					TypeDefinition i = new StringType();
