@@ -60,9 +60,11 @@ public class TypeDefinitionFactory {
 				if (a instanceof JsonIgnore) {
 					continue outer;
 				}
-				if(a instanceof Temporal){
-				     oType.addProperty(name, oType);
-				     continue outer;
+				if (a instanceof Temporal) {
+					TypeDefinition i = new StringType();
+					i.setName(name);
+					oType.addProperty(i);
+					continue outer;
 				}
 			}
 			final TypeDefinition innerType = TypeDefinitionFactory.getTypeDefinition(f.getType(), f.getAnnotations(), f.getGenericType());
