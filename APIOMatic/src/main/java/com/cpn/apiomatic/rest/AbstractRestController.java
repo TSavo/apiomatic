@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.cpn.apiomatic.generator.ControllerDescription;
 
-public abstract class AbstractRestController<T extends DataTransferObject> {
+public abstract class AbstractRestController<IdType, DTOType extends DataTransferObject<IdType>> {
 
 	@PersistenceContext
 	protected EntityManager entityManager;
@@ -23,7 +23,7 @@ public abstract class AbstractRestController<T extends DataTransferObject> {
 	@RequestMapping(method = RequestMethod.POST)
 	@Transactional
 	public @ResponseBody
-	T add(@RequestBody final T aT) throws Exception {
+	DTOType add(@RequestBody final DTOType aT) {
 		entityManager.persist(aT);
 		return aT;
 	}
@@ -31,35 +31,34 @@ public abstract class AbstractRestController<T extends DataTransferObject> {
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
 	@Transactional
 	public @ResponseBody
-	void delete(@PathVariable final String id) {
+	void delete(@PathVariable final IdType id) {
 		entityManager.remove(entityManager.find(getPersistenceClass(), id));
 	}
 
 	@SuppressWarnings("unchecked")
-	public final Class<T> getPersistenceClass() {
-		return (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+	public final Class<DTOType> getPersistenceClass() {
+		return (Class<DTOType>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 	}
 
 	@SuppressWarnings("unchecked")
 	@RequestMapping(method = RequestMethod.GET)
 	@Transactional
 	public @ResponseBody
-	T[] list() throws IOException {
-		return (T[]) entityManager.createQuery("from " + getPersistenceClass().getName(), getPersistenceClass()).getResultList().toArray();
-
+	DTOType[] list() {
+		return (DTOType[]) entityManager.createQuery("from " + getPersistenceClass().getName(), getPersistenceClass()).getResultList().toArray();
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@Transactional
 	public @ResponseBody
-	T show(@PathVariable final String id) {
+	DTOType show(@PathVariable final IdType id) {
 		return entityManager.find(getPersistenceClass(), id);
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	@Transactional
 	public @ResponseBody
-	T update(@RequestBody final T aT) {
+	DTOType update(@RequestBody final DTOType aT) {
 		return entityManager.merge(aT);
 	}
 
