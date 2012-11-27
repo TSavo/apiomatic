@@ -1,4 +1,4 @@
-package com.cpn.apiomatic.generator.model;
+package com.cpn.apiomatic.documentation.model;
 
 import java.util.ArrayList;
 import java.util.HashSet;

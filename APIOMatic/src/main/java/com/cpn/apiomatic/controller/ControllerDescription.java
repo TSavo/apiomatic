@@ -11,8 +11,8 @@ import java.util.Set;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.cpn.apiomatic.annotation.Documentation;
-import com.cpn.apiomatic.generator.model.TypeDefinition;
-import com.cpn.apiomatic.generator.model.TypeDefinitionFactory;
+import com.cpn.apiomatic.documentation.model.TypeDefinition;
+import com.cpn.apiomatic.documentation.model.TypeDefinitionFactory;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
