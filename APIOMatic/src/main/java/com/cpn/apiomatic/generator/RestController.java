@@ -4,11 +4,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.cpn.apiomatic.annotation.Documentation;
+import com.cpn.apiomatic.generator.model.TypeDefinition;
+import com.cpn.apiomatic.generator.model.TypeDefinitionFactory;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -18,6 +22,49 @@ public class RestController {
 	public String documentation;
 	public String packageName;
 	public List<RestControllerMethod> methods = new ArrayList<>();
+	public List<TypeDefinition> typeDefinitions = new ArrayList<>();
+	public List<String> getUrls() {
+		return urls;
+	}
+
+	public void setUrls(List<String> urls) {
+		this.urls = urls;
+	}
+
+	public String getDocumentation() {
+		return documentation;
+	}
+
+	public void setDocumentation(String documentation) {
+		this.documentation = documentation;
+	}
+
+	public String getPackageName() {
+		return packageName;
+	}
+
+	public void setPackageName(String packageName) {
+		this.packageName = packageName;
+	}
+
+	public List<RestControllerMethod> getMethods() {
+		return methods;
+	}
+
+	public void setMethods(List<RestControllerMethod> methods) {
+		this.methods = methods;
+	}
+
+	public List<TypeDefinition> getTypeDefinitions() {
+		return typeDefinitions;
+	}
+
+	public void setTypeDefinitions(List<TypeDefinition> typeDefinitions) {
+		this.typeDefinitions = typeDefinitions;
+	}
+
+	private Set<Class<?>> doneClasses = new HashSet<>();
+	private Set<Class<?>> remainingClasses = new HashSet<>();
 
 	public RestController(final Class<?> aClazz) {
 		packageName = aClazz.getPackage().getName();
@@ -39,6 +86,18 @@ public class RestController {
 					break;
 				}
 			}
+		}
+		for (RestControllerMethod m : methods) {
+			remainingClasses.addAll(m.typeRefs);
+		}
+		while (!remainingClasses.isEmpty()) {
+			Class<?> c = remainingClasses.iterator().next();
+			doneClasses.add(c);
+			remainingClasses.remove(c);
+			TypeDefinition t = TypeDefinitionFactory.getTypeDefinition(c, c.getAnnotations(), c);
+			t.typeRefs.removeAll(doneClasses);
+			remainingClasses.addAll(t.typeRefs);
+			typeDefinitions.add(t);
 		}
 	}
 }

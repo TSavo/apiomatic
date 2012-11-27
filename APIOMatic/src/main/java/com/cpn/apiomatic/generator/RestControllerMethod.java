@@ -4,7 +4,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.cpn.apiomatic.annotation.Documentation;
 import com.cpn.apiomatic.generator.model.TypeDefinition;
 import com.cpn.apiomatic.generator.model.TypeDefinitionFactory;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -91,7 +94,10 @@ public class RestControllerMethod {
 	TypeDefinition responseBody;
 	List<String> urls;
 	String documentation;
-	
+
+	@JsonIgnore
+	Set<Class<?>> typeRefs = new HashSet<Class<?>>();
+
 	public String getDocumentation() {
 		return documentation;
 	}
@@ -125,10 +131,17 @@ public class RestControllerMethod {
 			final Annotation[] annotations = parameterAnnotations[x];
 			for (final Annotation annotation : annotations) {
 				if (annotation instanceof RequestBody) {
-					requestBody = TypeDefinitionFactory.getTypeDefinition(clazz, annotations, types[x]);
+					requestBody = TypeDefinitionFactory.getTypeDefinitionWithReference(clazz, types[x]);
 				}
 			}
 		}
-		responseBody = TypeDefinitionFactory.getTypeDefinition(aMethod.getReturnType(), aMethod.getAnnotations(), aMethod.getGenericReturnType());
+		responseBody = TypeDefinitionFactory.getTypeDefinitionWithReference(aMethod.getReturnType(), aMethod.getGenericReturnType());
+		
+		if(requestBody != null){
+			typeRefs.addAll(requestBody.typeRefs);
+		}
+		if(responseBody != null){
+			typeRefs.addAll(responseBody.typeRefs);
+		}
 	}
 }

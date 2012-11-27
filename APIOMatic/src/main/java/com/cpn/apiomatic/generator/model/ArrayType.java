@@ -13,5 +13,6 @@ public class ArrayType extends TypeDefinition {
 	public <T> ArrayType(final TypeDefinition aTypeDef) {
 		super(Type.ARRAY);
 		nestedType = aTypeDef;
+		typeRefs.addAll(aTypeDef.typeRefs);
 	}
 }
