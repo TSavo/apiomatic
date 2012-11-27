@@ -15,20 +15,12 @@ public class ObjectType extends TypeDefinition {
 	 * 
 	 */
 	private static final long serialVersionUID = -2471656517997763393L;
-	@JsonProperty("class")
-	String clazz;
-	public String getClazz() {
-		return clazz;
-	}
 
-	public void setClazz(String clazz) {
-		this.clazz = clazz;
-	}
 	List<TypeDefinition> properties = new ArrayList<>();
 	public Set<TypeDefinition> subclasses = new HashSet<>();
-	public boolean abstractClass = false;
-	
-	public boolean isAbstractClass() {
+	public Boolean abstractClass = null;
+
+	public Boolean isAbstractClass() {
 		return abstractClass;
 	}
 
@@ -38,7 +30,7 @@ public class ObjectType extends TypeDefinition {
 
 	public ObjectType(final Class<?> aClazz) {
 		super(Type.OBJECT);
-		clazz = aClazz.getName();
+		setType(aClazz.getName());
 	}
 
 	public void addProperty(final TypeDefinition aTypeDef) {
@@ -52,10 +44,12 @@ public class ObjectType extends TypeDefinition {
 	public void setProperties(final List<TypeDefinition> properties) {
 		this.properties = properties;
 	}
+
 	public Set<TypeDefinition> getSubclasses() {
 		return subclasses;
 	}
-	public void setSubclasses(Set<TypeDefinition> someSubclasses){
+
+	public void setSubclasses(Set<TypeDefinition> someSubclasses) {
 		subclasses = someSubclasses;
 	}
 

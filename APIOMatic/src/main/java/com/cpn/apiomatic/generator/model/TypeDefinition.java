@@ -59,7 +59,7 @@ public abstract class TypeDefinition implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 6447501882432068218L;
-	public boolean optional = false;
+	public Boolean optional = null;
 
 	public String type;
 	public String name;
@@ -83,7 +83,7 @@ public abstract class TypeDefinition implements Serializable {
 		return type;
 	}
 
-	public boolean isOptional() {
+	public Boolean isOptional() {
 		return optional;
 	}
 

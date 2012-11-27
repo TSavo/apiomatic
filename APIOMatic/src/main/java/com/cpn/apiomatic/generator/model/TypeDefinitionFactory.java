@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -38,6 +39,7 @@ public class TypeDefinitionFactory {
 		stopClasses.add(Double.class);
 		stopClasses.add(float.class);
 		stopClasses.add(double.class);
+		stopClasses.add(Date.class);
 	}
 
 	public static TypeDefinition getTypeDefinitionWithReference(final Class<?> clazz, final Type aType) {
@@ -45,7 +47,7 @@ public class TypeDefinitionFactory {
 		if (baseClazz.equals(void.class)) {
 			return null;
 		}
-		if (baseClazz.equals(String.class)) {
+		if (baseClazz.equals(String.class) || baseClazz.isAssignableFrom(Date.class)) {
 			return new StringType();
 		}
 		if (baseClazz.equals(Integer.class) || baseClazz.equals(Long.class) || baseClazz.equals(Short.class) || baseClazz.equals(int.class) || baseClazz.equals(long.class) || baseClazz.equals(short.class)) {
@@ -75,7 +77,7 @@ public class TypeDefinitionFactory {
 					continue outer;
 				}
 			}
-			if (stopClasses.contains(f.getType())){
+			if (stopClasses.contains(f.getType())) {
 				continue;
 			}
 			typeRef.typeRefs.add(f.getType());
@@ -90,7 +92,7 @@ public class TypeDefinitionFactory {
 		if (baseClazz.equals(void.class)) {
 			return null;
 		}
-		if (baseClazz.equals(String.class)) {
+		if (baseClazz.equals(String.class) || baseClazz.isAssignableFrom(Date.class)) {
 			return new StringType();
 		}
 		if (baseClazz.equals(Integer.class) || baseClazz.equals(Long.class) || baseClazz.equals(Short.class) || baseClazz.equals(int.class) || baseClazz.equals(long.class) || baseClazz.equals(short.class)) {
