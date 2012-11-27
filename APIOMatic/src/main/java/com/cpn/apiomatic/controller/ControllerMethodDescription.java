@@ -1,4 +1,4 @@
-package com.cpn.apiomatic.generator;
+package com.cpn.apiomatic.controller;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

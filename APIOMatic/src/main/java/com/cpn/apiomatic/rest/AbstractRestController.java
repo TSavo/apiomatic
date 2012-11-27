@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.cpn.apiomatic.generator.ControllerDescription;
+import com.cpn.apiomatic.controller.ControllerDescription;
 
 public abstract class AbstractRestController<IdType, DTOType extends DataTransferObject<IdType>> {
 
