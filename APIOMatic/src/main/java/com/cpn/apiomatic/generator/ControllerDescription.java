@@ -17,11 +17,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_NULL)
-public class RestController {
+public class ControllerDescription {
 	public List<String> urls;
 	public String documentation;
 	public String packageName;
-	public List<RestControllerMethod> methods = new ArrayList<>();
+	public List<ControllerMethodDescription> methods = new ArrayList<>();
 	public List<TypeDefinition> typeDefinitions = new ArrayList<>();
 	public List<String> getUrls() {
 		return urls;
@@ -47,11 +47,11 @@ public class RestController {
 		this.packageName = packageName;
 	}
 
-	public List<RestControllerMethod> getMethods() {
+	public List<ControllerMethodDescription> getMethods() {
 		return methods;
 	}
 
-	public void setMethods(List<RestControllerMethod> methods) {
+	public void setMethods(List<ControllerMethodDescription> methods) {
 		this.methods = methods;
 	}
 
@@ -66,7 +66,7 @@ public class RestController {
 	private Set<Class<?>> doneClasses = new HashSet<>();
 	private Set<Class<?>> remainingClasses = new HashSet<>();
 
-	public RestController(final Class<?> aClazz) {
+	public ControllerDescription(final Class<?> aClazz) {
 		packageName = aClazz.getPackage().getName();
 		final Annotation[] classAnnotations = aClazz.getAnnotations();
 		for (final Annotation annotation : classAnnotations) {
@@ -82,12 +82,12 @@ public class RestController {
 		for (final Method aMethod : aMethods) {
 			for (final Annotation annotation : aMethod.getAnnotations()) {
 				if (annotation instanceof RequestMapping && !aMethod.getReturnType().equals(getClass())) {
-					methods.add(new RestControllerMethod(aMethod));
+					methods.add(new ControllerMethodDescription(aMethod));
 					break;
 				}
 			}
 		}
-		for (RestControllerMethod m : methods) {
+		for (ControllerMethodDescription m : methods) {
 			remainingClasses.addAll(m.typeRefs);
 		}
 		while (!remainingClasses.isEmpty()) {

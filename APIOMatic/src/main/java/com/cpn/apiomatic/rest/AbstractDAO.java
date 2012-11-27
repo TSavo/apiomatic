@@ -7,15 +7,11 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-public abstract class AbstractDAO<T extends DataTransferObject> {
+public abstract class AbstractDAO<X, T extends DataTransferObject<X>> {
 	@PersistenceContext
 	protected EntityManager entityManager;
-
-	public T find(final Object o) {
-		return entityManager.find(getDTOClass(), o);
-	}
 	
-	public T find(final Object o, final int id){
+	public T find(final X id){
 		return entityManager.find(getDTOClass(), id);
 	}
 
@@ -58,7 +54,7 @@ public abstract class AbstractDAO<T extends DataTransferObject> {
 		}
 	}
 	
-	public T findById(final String id) {
+	public T findById(final X id) {
 		try {
 			return entityManager.find(getDTOClass(), id);
 		} catch (final Exception e) {

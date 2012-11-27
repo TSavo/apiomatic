@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.cpn.apiomatic.generator.RestController;
+import com.cpn.apiomatic.generator.ControllerDescription;
 
 public class AbstractServiceDescriptionController implements ApplicationContextAware {
 
@@ -39,8 +39,8 @@ public class AbstractServiceDescriptionController implements ApplicationContextA
 
 	@RequestMapping(value = "/{name}", method = { RequestMethod.GET, RequestMethod.OPTIONS })
 	public @ResponseBody
-	RestController getRestControllerForClass(@PathVariable("name") String aName) {
-		return new RestController(ClassUtils.getUserClass(context.getBean(aName).getClass()));
+	ControllerDescription getRestControllerForClass(@PathVariable("name") String aName) {
+		return new ControllerDescription(ClassUtils.getUserClass(context.getBean(aName).getClass()));
 	}
 
 }

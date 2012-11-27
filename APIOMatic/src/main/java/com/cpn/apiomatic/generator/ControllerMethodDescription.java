@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_NULL)
-public class RestControllerMethod {
+public class ControllerMethodDescription {
 	public TypeDefinition getBody() {
 		return requestBody;
 	}
@@ -106,7 +106,7 @@ public class RestControllerMethod {
 		this.documentation = documentation;
 	}
 
-	public RestControllerMethod(final Method aMethod) {
+	public ControllerMethodDescription(final Method aMethod) {
 		final Annotation[] methodAnnotations = aMethod.getAnnotations();
 		for (final Annotation annotation : methodAnnotations) {
 			if (annotation instanceof RequestMapping) {
