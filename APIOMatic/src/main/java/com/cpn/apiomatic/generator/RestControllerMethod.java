@@ -1,4 +1,4 @@
-package com.cpn.apiomatic.generator.model;
+package com.cpn.apiomatic.generator;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -11,17 +11,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.cpn.apiomatic.annotation.Documentation;
+import com.cpn.apiomatic.generator.model.TypeDefinition;
+import com.cpn.apiomatic.generator.model.TypeDefinitionFactory;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_NULL)
-public class Operation {
+public class RestControllerMethod {
 	public TypeDefinition getBody() {
-		return body;
+		return requestBody;
 	}
 
 	public void setBody(TypeDefinition body) {
-		this.body = body;
+		this.requestBody = body;
 	}
 
 	public List<String> getConsumes() {
@@ -41,19 +43,19 @@ public class Operation {
 	}
 
 	public List<RequestMethod> getMethods() {
-		return methods;
+		return supportedMethods;
 	}
 
 	public void setMethods(List<RequestMethod> methods) {
-		this.methods = methods;
+		this.supportedMethods = methods;
 	}
 
 	public List<String> getParams() {
-		return params;
+		return urlParams;
 	}
 
 	public void setParams(List<String> params) {
-		this.params = params;
+		this.urlParams = params;
 	}
 
 	public List<String> getProduces() {
@@ -65,11 +67,11 @@ public class Operation {
 	}
 
 	public TypeDefinition getResponse() {
-		return response;
+		return responseBody;
 	}
 
 	public void setResponse(TypeDefinition response) {
-		this.response = response;
+		this.responseBody = response;
 	}
 
 	public List<String> getUrls() {
@@ -80,13 +82,13 @@ public class Operation {
 		this.urls = urls;
 	}
 
-	TypeDefinition body;
+	TypeDefinition requestBody;
 	List<String> consumes;
 	List<String> headers;
-	List<RequestMethod> methods;
-	List<String> params;
+	List<RequestMethod> supportedMethods;
+	List<String> urlParams;
 	List<String> produces;
-	TypeDefinition response;
+	TypeDefinition responseBody;
 	List<String> urls;
 	String documentation;
 	
@@ -98,17 +100,17 @@ public class Operation {
 		this.documentation = documentation;
 	}
 
-	public Operation(final Method aMethod) {
+	public RestControllerMethod(final Method aMethod) {
 		final Annotation[] methodAnnotations = aMethod.getAnnotations();
 		for (final Annotation annotation : methodAnnotations) {
 			if (annotation instanceof RequestMapping) {
 				final RequestMapping requestMapping = (RequestMapping) annotation;
 				urls = Arrays.asList(requestMapping.value());
-				methods = Arrays.asList(requestMapping.method());
-				//produces = Arrays.asList(requestMapping.produces());
-				//consumes = Arrays.asList(requestMapping.consumes());
+				supportedMethods = Arrays.asList(requestMapping.method());
+				produces = Arrays.asList(requestMapping.produces());
+				consumes = Arrays.asList(requestMapping.consumes());
 				headers = Arrays.asList(requestMapping.headers());
-				params = Arrays.asList(requestMapping.params());
+				urlParams = Arrays.asList(requestMapping.params());
 				continue;
 			}
 			if (annotation instanceof Documentation) {
@@ -123,10 +125,10 @@ public class Operation {
 			final Annotation[] annotations = parameterAnnotations[x];
 			for (final Annotation annotation : annotations) {
 				if (annotation instanceof RequestBody) {
-					body = TypeDefinitionFactory.getTypeDefinition(clazz, annotations, types[x]);
+					requestBody = TypeDefinitionFactory.getTypeDefinition(clazz, annotations, types[x]);
 				}
 			}
 		}
-		response = TypeDefinitionFactory.getTypeDefinition(aMethod.getReturnType(), aMethod.getAnnotations(), aMethod.getGenericReturnType());
+		responseBody = TypeDefinitionFactory.getTypeDefinition(aMethod.getReturnType(), aMethod.getAnnotations(), aMethod.getGenericReturnType());
 	}
 }

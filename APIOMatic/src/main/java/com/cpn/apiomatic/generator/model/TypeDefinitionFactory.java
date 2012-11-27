@@ -44,6 +44,9 @@ public class TypeDefinitionFactory {
 				return new ArrayType(TypeDefinitionFactory.getTypeDefinition((Class<?>) gType, someAnnotations, aType));
 			}
 		}
+		if(clazz.isArray()){
+			return new ArrayType(TypeDefinitionFactory.getTypeDefinition(clazz.getComponentType(), someAnnotations, clazz.getComponentType().getGenericSuperclass()));
+		}
 
 		ObjectType oType = new ObjectType(clazz);
 		type = oType;

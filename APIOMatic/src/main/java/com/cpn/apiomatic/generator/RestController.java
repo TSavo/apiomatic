@@ -9,17 +9,18 @@ import java.util.List;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.cpn.apiomatic.annotation.Documentation;
-import com.cpn.apiomatic.generator.model.Operation;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-public class RestApiGenerator {
+@JsonInclude(Include.NON_NULL)
+public class RestController {
 	public List<String> urls;
 	public String documentation;
 	public String packageName;
-	public List<Operation> apiList = new ArrayList<>();
+	public List<RestControllerMethod> methods = new ArrayList<>();
 
-	public RestApiGenerator(final Class<?> aClazz) {
-		Package aPackage = aClazz.getPackage();
-		packageName = aPackage.getName();
+	public RestController(final Class<?> aClazz) {
+		packageName = aClazz.getPackage().getName();
 		final Annotation[] classAnnotations = aClazz.getAnnotations();
 		for (final Annotation annotation : classAnnotations) {
 			if (annotation instanceof RequestMapping) {
@@ -32,9 +33,9 @@ public class RestApiGenerator {
 		}
 		Method[] aMethods = aClazz.getMethods();
 		for (final Method aMethod : aMethods) {
-			for (final Annotation annotation : aMethod.getAnnotations() ) {
-				if (annotation instanceof RequestMapping && !aMethod.getReturnType().equals(RestApiGenerator.class)) {
-					apiList.add(new Operation(aMethod));
+			for (final Annotation annotation : aMethod.getAnnotations()) {
+				if (annotation instanceof RequestMapping && !aMethod.getReturnType().equals(getClass())) {
+					methods.add(new RestControllerMethod(aMethod));
 					break;
 				}
 			}
