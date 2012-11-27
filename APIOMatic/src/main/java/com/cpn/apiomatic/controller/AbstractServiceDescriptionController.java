@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import net.sf.cglib.proxy.Enhancer;
-
-import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,34 +17,30 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.cpn.apiomatic.generator.RestController;
 
-public abstract class AbstractServiceDescriptionController {
+public class AbstractServiceDescriptionController implements ApplicationContextAware {
 
 	@Autowired
 	ApplicationContext context;
 
+	@Override
+	public void setApplicationContext(ApplicationContext aContext) throws BeansException {
+		context = aContext;
+	}
+
 	@RequestMapping(method = { RequestMethod.GET, RequestMethod.OPTIONS })
 	public @ResponseBody
-	List<ServiceDescription> getServiceList() throws ClassNotFoundException {
+	List<ServiceDescription> getServiceList() {
 		List<ServiceDescription> results = new ArrayList<>();
 		for (Entry<String, Object> e : context.getBeansWithAnnotation(Controller.class).entrySet()) {
-			Class<?> c = e.getValue().getClass();
-			if (ClassUtils.isCglibProxyClass(c)) {
-				c = ClassUtils.getUserClass(c);
-			}
-
-			results.add(new ServiceDescription(e.getKey(), c));
+			results.add(new ServiceDescription(e.getKey(), ClassUtils.getUserClass(e.getValue().getClass())));
 		}
 		return results;
 	}
 
 	@RequestMapping(value = "/{name}", method = { RequestMethod.GET, RequestMethod.OPTIONS })
 	public @ResponseBody
-	RestController getRestControllerForClass(@PathVariable("name") String aName) throws ClassNotFoundException {
-		Class<?> c = context.getBean(aName).getClass();
-		if (ClassUtils.isCglibProxyClass(c)) {
-			c = ClassUtils.getUserClass(c);
-		}
-		return new RestController(c);
+	RestController getRestControllerForClass(@PathVariable("name") String aName) {
+		return new RestController(ClassUtils.getUserClass(context.getBean(aName).getClass()));
 	}
 
 }

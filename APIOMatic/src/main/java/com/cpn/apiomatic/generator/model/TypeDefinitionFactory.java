@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -13,6 +12,7 @@ import java.util.Set;
 import javax.persistence.Temporal;
 
 import org.reflections.Reflections;
+import org.springframework.util.ClassUtils;
 
 import com.cpn.apiomatic.annotation.Null;
 import com.cpn.apiomatic.annotation.Optional;
@@ -24,36 +24,37 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public class TypeDefinitionFactory {
 	public static TypeDefinition getTypeDefinition(final Class<?> clazz, final Annotation[] someAnnotations, final Type aType) {
 		TypeDefinition type;
-		if(clazz.equals(void.class)){
+		Class<?> baseClazz = ClassUtils.getUserClass(clazz);
+		if(baseClazz.equals(void.class)){
 			return null;
 		}
-		if (clazz.equals(String.class)) {
+		if (baseClazz.equals(String.class)) {
 			return new StringType();
 		}
-		if (clazz.equals(Integer.class) || clazz.equals(Long.class) || clazz.equals(Short.class) || clazz.equals(BigInteger.class) || clazz.equals(int.class) || clazz.equals(long.class) || clazz.equals(short.class)) {
+		if (baseClazz.equals(Integer.class) || baseClazz.equals(Long.class) || baseClazz.equals(Short.class) || baseClazz.equals(int.class) || baseClazz.equals(long.class) || baseClazz.equals(short.class)) {
 			return new IntegerType();
 		}
-		if (clazz.equals(Float.class) || clazz.equals(Double.class) || clazz.equals(float.class) || clazz.equals(double.class)) {
+		if (baseClazz.equals(Float.class) || baseClazz.equals(Double.class) || baseClazz.equals(float.class) || baseClazz.equals(double.class)) {
 			return new NumberType();
 		}
-		if (clazz.equals(List.class) || clazz.equals(Set.class)) {
-			Type typeInfo = TypeResolver.resolveGenericType(aType, clazz);
+		if (baseClazz.equals(List.class) || baseClazz.equals(Set.class)) {
+			Type typeInfo = TypeResolver.resolveGenericType(aType, baseClazz);
 			if (typeInfo instanceof ParameterizedType) {
 				ParameterizedType pType = (ParameterizedType) typeInfo;
 				Type gType = pType.getActualTypeArguments()[0];
 				return new ArrayType(TypeDefinitionFactory.getTypeDefinition((Class<?>) gType, someAnnotations, aType));
 			}
 		}
-		if(clazz.isArray()){
-			return new ArrayType(TypeDefinitionFactory.getTypeDefinition(clazz.getComponentType(), someAnnotations, clazz.getComponentType().getGenericSuperclass()));
+		if(baseClazz.isArray()){
+			return new ArrayType(TypeDefinitionFactory.getTypeDefinition(baseClazz.getComponentType(), someAnnotations, baseClazz.getComponentType().getGenericSuperclass()));
 		}
 
-		ObjectType oType = new ObjectType(clazz);
+		ObjectType oType = new ObjectType(baseClazz);
 		type = oType;
-		if ((clazz.getModifiers() & Modifier.ABSTRACT) == Modifier.ABSTRACT) {
+		if ((baseClazz.getModifiers() & Modifier.ABSTRACT) == Modifier.ABSTRACT) {
 			oType.setAbstractClass(true);
 		}
-		outer: for (final Field f : clazz.getDeclaredFields()) {
+		outer: for (final Field f : baseClazz.getDeclaredFields()) {
 			if (f.toString().contains("static")) {
 				continue;
 			}
@@ -79,21 +80,21 @@ public class TypeDefinitionFactory {
 			innerType.setName(name);
 			oType.addProperty(innerType);
 		}
-		if (clazz.getPackage() != null) {
-			Reflections reflections = new Reflections(clazz.getPackage().getName());
-			Set<?> subTypes = reflections.getSubTypesOf(clazz);
+		if (baseClazz.getPackage() != null) {
+			Reflections reflections = new Reflections(baseClazz.getPackage().getName());
+			Set<?> subTypes = reflections.getSubTypesOf(baseClazz);
 			Iterator<?> i = subTypes.iterator();
 			while (i.hasNext()) {
 				Class<?> c = (Class<?>) i.next();
 				oType.getSubclasses().add(getTypeDefinition(c, c.getAnnotations(), c));
 			}
 		}
-		for (final Annotation annotation : clazz.getAnnotations()) {
+		for (final Annotation annotation : baseClazz.getAnnotations()) {
 			if (annotation instanceof JsonTypeInfo) {
 				JsonTypeInfo typeInfo = (JsonTypeInfo) annotation;
 				StringType stringType = new StringType();
 				stringType.setOptional(false);
-				stringType.setRequiredValue(clazz.getCanonicalName());
+				stringType.setRequiredValue(baseClazz.getCanonicalName());
 				stringType.setName(typeInfo.property());
 				oType.addProperty(stringType);
 			}
