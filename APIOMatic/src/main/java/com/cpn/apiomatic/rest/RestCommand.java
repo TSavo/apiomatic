@@ -37,6 +37,7 @@ public class RestCommand<Request, Response> {
 	}
 
 	public RestCommand(final String aUrl, Class<Response> aResponse) {
+		this();
 		url = aUrl;
 		responseModel = aResponse;
 	}
