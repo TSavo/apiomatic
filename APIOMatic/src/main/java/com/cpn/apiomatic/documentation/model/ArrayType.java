@@ -1,4 +1,4 @@
-package com.cpn.apiomatic.generator.model;
+package com.cpn.apiomatic.documentation.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -13,5 +13,6 @@ public class ArrayType extends TypeDefinition {
 	public <T> ArrayType(final TypeDefinition aTypeDef) {
 		super(Type.ARRAY);
 		nestedType = aTypeDef;
+		typeRefs.addAll(aTypeDef.typeRefs);
 	}
 }

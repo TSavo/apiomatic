@@ -1,7 +1,10 @@
-package com.cpn.apiomatic.generator.model;
+package com.cpn.apiomatic.documentation.model;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -43,6 +46,12 @@ public abstract class TypeDefinition implements Serializable {
 			public String toString() {
 				return "string";
 			}
+		},
+		TYPE_REF {
+			@Override
+			public String toString() {
+				return "typeRef";
+			}
 		}
 	}
 
@@ -50,11 +59,14 @@ public abstract class TypeDefinition implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 6447501882432068218L;
-	public boolean optional = false;
+	public Boolean optional = null;
 
 	public String type;
 	public String name;
-	
+
+	@JsonIgnore
+	public Set<Class<?>> typeRefs = new HashSet<>();
+
 	public String getName() {
 		return name;
 	}
@@ -71,7 +83,7 @@ public abstract class TypeDefinition implements Serializable {
 		return type;
 	}
 
-	public boolean isOptional() {
+	public Boolean isOptional() {
 		return optional;
 	}
 
@@ -82,6 +94,5 @@ public abstract class TypeDefinition implements Serializable {
 	public void setType(final String type) {
 		this.type = type;
 	}
-
 
 }

@@ -16,6 +16,13 @@ import org.reflections.Reflections;
 
 import com.cpn.apiomatic.annotation.Null;
 import com.cpn.apiomatic.annotation.Optional;
+import com.cpn.apiomatic.documentation.model.ArrayType;
+import com.cpn.apiomatic.documentation.model.IntegerType;
+import com.cpn.apiomatic.documentation.model.NullType;
+import com.cpn.apiomatic.documentation.model.NumberType;
+import com.cpn.apiomatic.documentation.model.ObjectType;
+import com.cpn.apiomatic.documentation.model.StringType;
+import com.cpn.apiomatic.documentation.model.TypeDefinition;
 import com.cpn.apiomatic.type.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

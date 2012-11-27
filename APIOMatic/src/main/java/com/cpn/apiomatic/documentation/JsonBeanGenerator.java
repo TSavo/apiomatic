@@ -1,13 +1,17 @@
-package com.cpn.apiomatic.generator;
+package com.cpn.apiomatic.documentation;
 
 import static com.sun.codemodel.JExpr._new;
 import static com.sun.codemodel.JExpr._this;
 import static com.sun.codemodel.JExpr.lit;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,16 +26,23 @@ import javax.persistence.OneToOne;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.math.RandomUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.cpn.apiomatic.generator.model.sql.Column;
-import com.cpn.apiomatic.generator.model.sql.Index;
-import com.cpn.apiomatic.generator.model.sql.Table;
+import com.cpn.apiomatic.documentation.model.sql.Column;
+import com.cpn.apiomatic.documentation.model.sql.Index;
+import com.cpn.apiomatic.documentation.model.sql.Table;
+import com.cpn.apiomatic.rest.AbstractDAO;
+import com.cpn.apiomatic.rest.AbstractRestController;
+import com.cpn.apiomatic.rest.DataTransferObject;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.codemodel.CodeWriter;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JClassAlreadyExistsException;
@@ -41,6 +52,7 @@ import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
+import com.sun.codemodel.JPackage;
 import com.sun.codemodel.JVar;
 
 public class JsonBeanGenerator {
@@ -63,10 +75,92 @@ public class JsonBeanGenerator {
 		return makeClassFromJson(aNode.get("__class__").textValue(), aNode, aDestination);
 	}
 
+	public JavaRepresentation makeClassDescription(JsonNode aNode) throws Exception {
+		final JavaRepresentation rep = new JavaRepresentation();
+		rep.originalJson = aNode;
+		String name;
+		if(aNode.hasNonNull("__class__")){
+			name = aNode.get("__class__").asText();
+		}else{
+			name = "JsonModel" + RandomUtils.nextInt();
+		}
+		JDefinedClass myClass = makeClass(name, aNode);
+
+		if (aNode.has("__persistent__") && aNode.get("__persistent__").asBoolean()) {
+			JClass idType = null;
+			for (Entry<String, JFieldVar> f : myClass.fields().entrySet()) {
+				if (f.getKey().toLowerCase().equals("id")) {
+					idType = f.getValue().type().boxify();
+					break;
+				}
+			}
+			if (idType != null) {
+				makeDAO(myClass, idType);
+				makeController(myClass, idType);
+			}
+			for (Table t : tables.values()) {
+				StringWriter writer = new StringWriter();
+				t.write(writer);
+				rep.migrations.add(writer.toString());
+			}
+			for (Index i : indexes.values()) {
+				StringWriter writer = new StringWriter();
+				i.write(writer);
+				rep.migrations.add(writer.toString());
+			}
+		}
+
+		codeModel.build(new CodeWriter() {
+			Map<String, Object> streams = new HashMap<>();
+
+			@Override
+			public OutputStream openBinary(JPackage pkg, String fileName) {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				streams.put(fileName, baos);
+				return baos;
+			}
+
+			@Override
+			public Writer openSource(JPackage pkg, String fileName) {
+				StringWriter writer = new StringWriter();
+				streams.put(fileName, writer);
+				return writer;
+			}
+
+			@Override
+			public void close() {
+				for (Entry<String, Object> s : streams.entrySet()) {
+					JavaClassDescription jcd = new JavaClassDescription();
+					jcd.name = s.getKey();
+					jcd.contents = s.getValue().toString();
+					if (jcd.name.endsWith("Controller")) {
+						rep.controllerClass = jcd;
+					} else if (jcd.name.endsWith("DAO")) {
+						rep.daoClass = jcd;
+					} else {
+						rep.classes.add(jcd);
+					}
+				}
+			}
+		});
+		return rep;
+	}
+
 	public JDefinedClass makeClassFromJson(String aClassName, JsonNode aNode, File aDestination) throws JClassAlreadyExistsException, IOException {
 		JDefinedClass myClass = makeClass(aClassName, aNode);
-		codeModel.build(aDestination);
+
 		if (aNode.has("__persistent__") && aNode.get("__persistent__").asBoolean()) {
+			JClass idType = null;
+			for (Entry<String, JFieldVar> f : myClass.fields().entrySet()) {
+				if (f.getKey().toLowerCase().equals("id")) {
+					idType = f.getValue().type().boxify();
+					break;
+				}
+			}
+			if (idType != null) {
+				makeDAO(myClass, idType);
+				makeController(myClass, idType);
+			}
 			FileWriter writer = new FileWriter(new File("c:\\temp\\migration.sql"));
 			for (Table t : tables.values()) {
 				t.write(writer);
@@ -77,6 +171,8 @@ public class JsonBeanGenerator {
 			writer.close();
 			System.out.println("migration.sql");
 		}
+
+		codeModel.build(aDestination);
 		return myClass;
 	}
 
@@ -84,6 +180,19 @@ public class JsonBeanGenerator {
 		ObjectMapper objectMapper = new ObjectMapper();
 		JsonNode node = objectMapper.readValue(aJsonString, JsonNode.class);
 		return makeClassFromJson(aClassName, node, aDestination);
+	}
+
+	private JDefinedClass makeDAO(JDefinedClass aClass, JClass aIdType) throws JClassAlreadyExistsException {
+		JDefinedClass dao = codeModel._class(aClass.name() + "DAO")._extends(codeModel.ref(AbstractDAO.class).narrow(aIdType, aClass));
+		dao.annotate(Service.class);
+		return dao;
+	}
+
+	private JDefinedClass makeController(JDefinedClass aClass, JClass aIdType) throws JClassAlreadyExistsException {
+		JDefinedClass controller = codeModel._class(aClass.name() + "Controller")._extends(codeModel.ref(AbstractRestController.class).narrow(aIdType, aClass));
+		controller.annotate(Controller.class);
+		controller.annotate(RequestMapping.class);
+		return controller;
 	}
 
 	private JDefinedClass makeClass(String aClassName, JsonNode aNode) throws JClassAlreadyExistsException {
@@ -105,10 +214,8 @@ public class JsonBeanGenerator {
 			typeInfo.param("property", "__class__");
 		}
 		Table table = new Table(newClass.name());
-		if (persistent) {
-			newClass.annotate(Entity.class);
-		}
 		Iterator<Entry<String, JsonNode>> i = aNode.fields();
+		JClass idType = null;
 		while (i.hasNext()) {
 			Entry<String, JsonNode> entry = i.next();
 			if (entry.getKey().startsWith("__")) {
@@ -120,6 +227,13 @@ public class JsonBeanGenerator {
 			if (persistent && entry.getValue().isObject()) {
 				indexes.put(table.name + "_" + field.name(), new Index(table, c, clazz));
 			}
+			if (field.name().toLowerCase().equals("id")) {
+				idType = clazz;
+			}
+		}
+		if (persistent) {
+			newClass.annotate(Entity.class);
+			newClass = newClass._implements(codeModel.ref(DataTransferObject.class).narrow(idType));
 		}
 		newClass.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, long.class, "serialVersionUID").init(lit(RandomUtils.nextLong()));
 		newClass.constructor(JMod.PUBLIC);
@@ -149,22 +263,22 @@ public class JsonBeanGenerator {
 
 	private JClass determineType(JsonNode aNode, String aName, String aParentName) throws JClassAlreadyExistsException {
 		if (aNode.isInt()) {
-			return codeModel.ref(Integer.class);
+			return codeModel.ref(int.class);
 		}
 		if (aNode.isTextual()) {
 			return codeModel.ref(String.class);
 		}
 		if (aNode.isBoolean()) {
-			return codeModel.ref(Boolean.class);
+			return codeModel.ref(boolean.class);
 		}
 		if (aNode.isLong()) {
-			return codeModel.ref(Long.class);
+			return codeModel.ref(long.class);
 		}
 		if (aNode.isFloatingPointNumber()) {
-			return codeModel.ref(Float.class);
+			return codeModel.ref(float.class);
 		}
 		if (aNode.isNumber()) {
-			return codeModel.ref(Long.class);
+			return codeModel.ref(long.class);
 		}
 		if (aNode.isArray()) {
 			JClass list = codeModel.ref(List.class);
