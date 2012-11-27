@@ -91,7 +91,7 @@ public class RestControllerMethod {
 	TypeDefinition responseBody;
 	List<String> urls;
 	String documentation;
-	
+
 	public String getDocumentation() {
 		return documentation;
 	}

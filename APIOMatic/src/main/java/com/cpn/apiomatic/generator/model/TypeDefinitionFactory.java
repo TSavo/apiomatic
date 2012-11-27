@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public class TypeDefinitionFactory {
 	public static TypeDefinition getTypeDefinition(final Class<?> clazz, final Annotation[] someAnnotations, final Type aType) {
 		TypeDefinition type;
-		if(clazz.equals(void.class)){
+		if (clazz.equals(void.class)) {
 			return null;
 		}
 		if (clazz.equals(String.class)) {
@@ -44,7 +44,7 @@ public class TypeDefinitionFactory {
 				return new ArrayType(TypeDefinitionFactory.getTypeDefinition((Class<?>) gType, someAnnotations, aType));
 			}
 		}
-		if(clazz.isArray()){
+		if (clazz.isArray()) {
 			return new ArrayType(TypeDefinitionFactory.getTypeDefinition(clazz.getComponentType(), someAnnotations, clazz.getComponentType().getGenericSuperclass()));
 		}
 
