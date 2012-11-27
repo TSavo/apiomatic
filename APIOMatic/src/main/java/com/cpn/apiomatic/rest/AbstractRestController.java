@@ -63,9 +63,4 @@ public abstract class AbstractRestController<T extends DataTransferObject> {
 		return entityManager.merge(aT);
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/services")
-	public @ResponseBody
-	RestController servicesHelp() {
-		return new RestController(this.getClass());
-	}
 }
