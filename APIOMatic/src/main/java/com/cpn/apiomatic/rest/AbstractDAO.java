@@ -15,9 +15,10 @@ public abstract class AbstractDAO<X, T extends DataTransferObject<X>> {
 		return entityManager.find(getDTOClass(), id);
 	}
 
+	
 	@SuppressWarnings("unchecked")
 	public final Class<T> getDTOClass() {
-		return (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+		return (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 	}
 
 	public EntityManager getEntityManager() {
@@ -54,7 +55,7 @@ public abstract class AbstractDAO<X, T extends DataTransferObject<X>> {
 		}
 	}
 	
-	public T findById(final X id) {
+	public T findById(final String id) {
 		try {
 			return entityManager.find(getDTOClass(), id);
 		} catch (final Exception e) {
