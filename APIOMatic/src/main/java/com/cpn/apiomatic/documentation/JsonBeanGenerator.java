@@ -263,22 +263,22 @@ public class JsonBeanGenerator {
 
 	private JClass determineType(JsonNode aNode, String aName, String aParentName) throws JClassAlreadyExistsException {
 		if (aNode.isInt()) {
-			return codeModel.ref(int.class);
+			return codeModel.ref(Integer.class);
 		}
 		if (aNode.isTextual()) {
 			return codeModel.ref(String.class);
 		}
 		if (aNode.isBoolean()) {
-			return codeModel.ref(boolean.class);
+			return codeModel.ref(Boolean.class);
 		}
 		if (aNode.isLong()) {
-			return codeModel.ref(long.class);
+			return codeModel.ref(Long.class);
 		}
 		if (aNode.isFloatingPointNumber()) {
-			return codeModel.ref(float.class);
+			return codeModel.ref(Float.class);
 		}
 		if (aNode.isNumber()) {
-			return codeModel.ref(long.class);
+			return codeModel.ref(Long.class);
 		}
 		if (aNode.isArray()) {
 			JClass list = codeModel.ref(List.class);
@@ -339,7 +339,7 @@ public class JsonBeanGenerator {
 	}
 
 	private static String sanitizeName(String aString) {
-		String name = WordUtils.uncapitalize(aString.replaceAll("class", "clazz"));
+		String name = WordUtils.uncapitalize(aString.replaceAll("class", "clazz").replaceAll("-", ""));
 		String[] names = name.split("\\_");
 		StringBuffer out = new StringBuffer();
 		for (int x = 0; x < names.length; ++x) {
