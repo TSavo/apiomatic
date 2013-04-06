@@ -7,37 +7,36 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-public abstract class AbstractDAO<X, T extends DataTransferObject<X>> {
+public abstract class AbstractDAO<IdType, DTOType extends DataTransferObject<IdType>> {
 	@PersistenceContext
 	protected EntityManager entityManager;
-	
-	public T find(final X id){
+
+	public DTOType find(final IdType id) {
 		return entityManager.find(getDTOClass(), id);
 	}
 
-	
 	@SuppressWarnings("unchecked")
-	public final Class<T> getDTOClass() {
-		return (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+	public final Class<DTOType> getDTOClass() {
+		return (Class<DTOType>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 	}
 
 	public EntityManager getEntityManager() {
 		return entityManager;
 	}
 
-	public List<T> list() {
+	public List<DTOType> list() {
 		return entityManager.createQuery("from " + getDTOClass().getName(), getDTOClass()).getResultList();
 	}
 
-	public T merge(final T aT) {
+	public DTOType merge(final DTOType aT) {
 		return entityManager.merge(aT);
 	}
 
-	public void persist(final T aT) {
+	public void persist(final DTOType aT) {
 		entityManager.persist(aT);
 	}
 
-	public T persistOrMerge(final T aT) {
+	public DTOType persistOrMerge(final DTOType aT) {
 		if (entityManager.find(getDTOClass(), aT.getId()) != null) {
 			return entityManager.merge(aT);
 		}
@@ -45,17 +44,29 @@ public abstract class AbstractDAO<X, T extends DataTransferObject<X>> {
 		return aT;
 	}
 
-	public void remove(final T aT) {
+	public void remove(final DTOType aT) {
 		entityManager.remove(aT);
 	}
-	
-	public void removeAll(final Collection<T> aT){
-		for (T t: aT){
+
+	public DTOType getReference(final IdType id) {
+		return entityManager.getReference(getDTOClass(), id);
+	}
+
+	public void removeRef(final IdType id) {
+		entityManager.remove(getReference(id));
+	}
+
+	public void removeRef(final DTOType aT) {
+		entityManager.remove(getReference(aT.getId()));
+	}
+
+	public void removeAll(final Collection<DTOType> aT) {
+		for (DTOType t : aT) {
 			entityManager.remove(t);
 		}
 	}
-	
-	public T findById(final String id) {
+
+	public DTOType findById(final String id) {
 		try {
 			return entityManager.find(getDTOClass(), id);
 		} catch (final Exception e) {
