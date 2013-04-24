@@ -2,7 +2,12 @@ package com.cpn.apiomatic.rest;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -16,13 +21,25 @@ public class RestCommand<Request, Response> {
 	private Request requestModel;
 	private Class<Response> responseModel;
 	private HttpHeaderDelegate headerDelegate = new NoAuthHeaderDelegate();
-
+	private static SchemeRegistry schemeRegistry = new SchemeRegistry();
+	private static PoolingClientConnectionManager cm = new PoolingClientConnectionManager(schemeRegistry);
+	static{
+		schemeRegistry.register(
+		         new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
+		schemeRegistry.register(
+		         new Scheme("https", 443, SSLSocketFactory.getSocketFactory()));
+		// Increase max total connection to 200
+		cm.setMaxTotal(100);
+		// Increase default max connection per route to 20
+		cm.setDefaultMaxPerRoute(20);
+	}
+	
 	public RestCommand() {
-		restTemplate=new RestTemplate(new HttpComponentsClientHttpRequestFactory(new DefaultHttpClient()));
+		restTemplate=new RestTemplate(new HttpComponentsClientHttpRequestFactory(new DefaultHttpClient(cm)));
 	}
 
 	public RestCommand(final String aUserName, final String aPassword, final String anAuthDomain, int aPort) {
-		DefaultHttpClient client = new DefaultHttpClient();
+		DefaultHttpClient client = new DefaultHttpClient(cm);
 		UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(aUserName, aPassword);
 		client.getCredentialsProvider().setCredentials(new AuthScope(anAuthDomain, aPort, AuthScope.ANY_REALM), credentials);
 		HttpComponentsClientHttpRequestFactory commons = new HttpComponentsClientHttpRequestFactory(client);
