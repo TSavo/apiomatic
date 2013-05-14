@@ -71,9 +71,9 @@ public class RestCommand<Request, Response> {
 
 	public void delete() {
 		if (getRequestModel() == null) {
-			restTemplate.exchange(getUrl(), HttpMethod.DELETE, new HttpEntity<String>(getHttpHeaders()), null);
+			restTemplate.exchange(getUrl(), HttpMethod.DELETE, new HttpEntity<String>(getHttpHeaders()),responseModel);
 		} else {
-			restTemplate.exchange(getUrl(), HttpMethod.DELETE, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), null);
+			restTemplate.exchange(getUrl(), HttpMethod.DELETE, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), responseModel);
 		}
 	}
 
