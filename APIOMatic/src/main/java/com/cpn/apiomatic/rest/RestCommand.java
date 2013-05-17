@@ -11,6 +11,8 @@ import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,6 +21,7 @@ public class RestCommand<Request, Response> {
 	private RestTemplate restTemplate;// = new RestTemplate();
 	private String url;
 	private Request requestModel;
+	private ResponseEntity<Response> responseEntity;
 	private Class<Response> responseModel;
 	private HttpHeaderDelegate headerDelegate = new NoAuthHeaderDelegate();
 	private static SchemeRegistry schemeRegistry = new SchemeRegistry();
@@ -71,14 +74,15 @@ public class RestCommand<Request, Response> {
 
 	public void delete() {
 		if (getRequestModel() == null) {
-			restTemplate.exchange(getUrl(), HttpMethod.DELETE, new HttpEntity<String>(getHttpHeaders()),responseModel);
+			 responseEntity=restTemplate.exchange(getUrl(), HttpMethod.DELETE, new HttpEntity<String>(getHttpHeaders()),responseModel);
 		} else {
-			restTemplate.exchange(getUrl(), HttpMethod.DELETE, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), responseModel);
+			 responseEntity=restTemplate.exchange(getUrl(), HttpMethod.DELETE, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), responseModel);
 		}
 	}
 
 	public Response get() {
-		return restTemplate.exchange(getUrl(), HttpMethod.GET, new HttpEntity<String>(getHttpHeaders()), getResponseModel()).getBody();
+		 responseEntity=restTemplate.exchange(getUrl(), HttpMethod.GET, new HttpEntity<String>(getHttpHeaders()), getResponseModel());
+		 return responseEntity.getBody();
 	}
 
 	public HttpHeaders getHttpHeaders() {
@@ -98,11 +102,13 @@ public class RestCommand<Request, Response> {
 	}
 
 	public Response post() {
-		return restTemplate.exchange(getUrl(), HttpMethod.POST, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), getResponseModel()).getBody();
+		responseEntity=restTemplate.exchange(getUrl(), HttpMethod.POST, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), getResponseModel());
+		return responseEntity.getBody();
 	}
 
 	public Response put() {
-		return restTemplate.exchange(getUrl(), HttpMethod.PUT, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), getResponseModel()).getBody();
+		responseEntity=restTemplate.exchange(getUrl(), HttpMethod.PUT, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), getResponseModel());
+		return responseEntity.getBody();
 	}
 
 	public void setUrl(final String path) {
@@ -125,4 +131,7 @@ public class RestCommand<Request, Response> {
 		this.headerDelegate = headerDelegate;
 	}
 
+	public HttpStatus getHttpStatus(){
+		return responseEntity.getStatusCode();
+	}
 }
