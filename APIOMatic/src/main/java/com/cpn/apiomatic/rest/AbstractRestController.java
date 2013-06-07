@@ -1,7 +1,7 @@
 package com.cpn.apiomatic.rest;
 
-import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.cpn.apiomatic.controller.ControllerDescription;
 
 public abstract class AbstractRestController<IdType, DTOType extends DataTransferObject<IdType>> {
 
@@ -40,14 +38,26 @@ public abstract class AbstractRestController<IdType, DTOType extends DataTransfe
 		return (Class<DTOType>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 	}
 
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	@RequestMapping(method = RequestMethod.GET)
 	@Transactional
 	public @ResponseBody
 	DTOType[] list() {
 		return (DTOType[]) entityManager.createQuery("from " + getPersistenceClass().getName(), getPersistenceClass()).getResultList().toArray();
+	}*/
+
+	@SuppressWarnings("unchecked")
+	public final Class<DTOType> getDTOClass() {
+		return (Class<DTOType>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 	}
 
+	@RequestMapping(method = RequestMethod.GET)
+	@Transactional
+	public @ResponseBody
+	List<DTOType> list() {
+		return entityManager.createQuery("from " + getDTOClass().getName(), getDTOClass()).getResultList();
+	}
+	
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@Transactional
 	public @ResponseBody
