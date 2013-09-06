@@ -1,4 +1,4 @@
-package com.cpn.apiomatic.generator.model;
+package com.cpn.apiomatic.documentation.model;
 
 public class NullType extends TypeDefinition {
 	/**
