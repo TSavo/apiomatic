@@ -10,10 +10,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.Temporal;
+
 import org.reflections.Reflections;
 
 import com.cpn.apiomatic.annotation.Null;
 import com.cpn.apiomatic.annotation.Optional;
+import com.cpn.apiomatic.documentation.model.ArrayType;
+import com.cpn.apiomatic.documentation.model.IntegerType;
+import com.cpn.apiomatic.documentation.model.NullType;
+import com.cpn.apiomatic.documentation.model.NumberType;
+import com.cpn.apiomatic.documentation.model.ObjectType;
+import com.cpn.apiomatic.documentation.model.StringType;
+import com.cpn.apiomatic.documentation.model.TypeDefinition;
 import com.cpn.apiomatic.type.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -22,6 +31,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public class TypeDefinitionFactory {
 	public static TypeDefinition getTypeDefinition(final Class<?> clazz, final Annotation[] someAnnotations, final Type aType) {
 		TypeDefinition type;
+		if (clazz.equals(void.class)) {
+			return null;
+		}
 		if (clazz.equals(String.class)) {
 			return new StringType();
 		}
@@ -39,6 +51,9 @@ public class TypeDefinitionFactory {
 				return new ArrayType(TypeDefinitionFactory.getTypeDefinition((Class<?>) gType, someAnnotations, aType));
 			}
 		}
+		if (clazz.isArray()) {
+			return new ArrayType(TypeDefinitionFactory.getTypeDefinition(clazz.getComponentType(), someAnnotations, clazz.getComponentType().getGenericSuperclass()));
+		}
 
 		ObjectType oType = new ObjectType(clazz);
 		type = oType;
@@ -52,15 +67,24 @@ public class TypeDefinitionFactory {
 
 			String name = f.getName();
 			for (final Annotation a : f.getAnnotations()) {
-				if (a instanceof JsonProperty) {
-					name = ((JsonProperty) a).value();
-				}
 				if (a instanceof JsonIgnore) {
 					continue outer;
 				}
 			}
+			for (final Annotation a : f.getAnnotations()) {
+				if (a instanceof JsonProperty) {
+					name = ((JsonProperty) a).value();
+				}
+				if (a instanceof Temporal) {
+					TypeDefinition i = new StringType();
+					i.setName(name);
+					oType.addProperty(i);
+					continue outer;
+				}
+			}
 			final TypeDefinition innerType = TypeDefinitionFactory.getTypeDefinition(f.getType(), f.getAnnotations(), f.getGenericType());
-			oType.addProperty(name, innerType);
+			innerType.setName(name);
+			oType.addProperty(innerType);
 		}
 		if (clazz.getPackage() != null) {
 			Reflections reflections = new Reflections(clazz.getPackage().getName());
@@ -77,7 +101,8 @@ public class TypeDefinitionFactory {
 				StringType stringType = new StringType();
 				stringType.setOptional(false);
 				stringType.setRequiredValue(clazz.getCanonicalName());
-				oType.addProperty(typeInfo.property(), stringType);
+				stringType.setName(typeInfo.property());
+				oType.addProperty(stringType);
 			}
 		}
 		for (final Annotation annotation : someAnnotations) {

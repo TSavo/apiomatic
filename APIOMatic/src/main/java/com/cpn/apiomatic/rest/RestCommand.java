@@ -2,10 +2,17 @@ package com.cpn.apiomatic.rest;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
@@ -14,15 +21,28 @@ public class RestCommand<Request, Response> {
 	private RestTemplate restTemplate;// = new RestTemplate();
 	private String url;
 	private Request requestModel;
+	private ResponseEntity<Response> responseEntity;
 	private Class<Response> responseModel;
 	private HttpHeaderDelegate headerDelegate = new NoAuthHeaderDelegate();
-
+	private static SchemeRegistry schemeRegistry = new SchemeRegistry();
+	private static PoolingClientConnectionManager cm = new PoolingClientConnectionManager(schemeRegistry);
+	static{
+		schemeRegistry.register(
+		         new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
+		schemeRegistry.register(
+		         new Scheme("https", 443, SSLSocketFactory.getSocketFactory()));
+		// Increase max total connection to 200
+		cm.setMaxTotal(100);
+		// Increase default max connection per route to 20
+		cm.setDefaultMaxPerRoute(20);
+	}
+	
 	public RestCommand() {
-		restTemplate = new RestTemplate();
+		restTemplate=new RestTemplate(new HttpComponentsClientHttpRequestFactory(new DefaultHttpClient(cm)));
 	}
 
 	public RestCommand(final String aUserName, final String aPassword, final String anAuthDomain, int aPort) {
-		DefaultHttpClient client = new DefaultHttpClient();
+		DefaultHttpClient client = new DefaultHttpClient(cm);
 		UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(aUserName, aPassword);
 		client.getCredentialsProvider().setCredentials(new AuthScope(anAuthDomain, aPort, AuthScope.ANY_REALM), credentials);
 		HttpComponentsClientHttpRequestFactory commons = new HttpComponentsClientHttpRequestFactory(client);
@@ -37,6 +57,7 @@ public class RestCommand<Request, Response> {
 	}
 
 	public RestCommand(final String aUrl, Class<Response> aResponse) {
+		this();
 		url = aUrl;
 		responseModel = aResponse;
 	}
@@ -53,14 +74,15 @@ public class RestCommand<Request, Response> {
 
 	public void delete() {
 		if (getRequestModel() == null) {
-			restTemplate.exchange(getUrl(), HttpMethod.DELETE, new HttpEntity<String>(getHttpHeaders()), null);
+			 responseEntity=restTemplate.exchange(getUrl(), HttpMethod.DELETE, new HttpEntity<String>(getHttpHeaders()),responseModel);
 		} else {
-			restTemplate.exchange(getUrl(), HttpMethod.DELETE, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), null);
+			 responseEntity=restTemplate.exchange(getUrl(), HttpMethod.DELETE, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), responseModel);
 		}
 	}
 
 	public Response get() {
-		return restTemplate.exchange(getUrl(), HttpMethod.GET, new HttpEntity<String>(getHttpHeaders()), getResponseModel()).getBody();
+		 responseEntity=restTemplate.exchange(getUrl(), HttpMethod.GET, new HttpEntity<String>(getHttpHeaders()), getResponseModel());
+		 return responseEntity.getBody();
 	}
 
 	public HttpHeaders getHttpHeaders() {
@@ -80,11 +102,13 @@ public class RestCommand<Request, Response> {
 	}
 
 	public Response post() {
-		return restTemplate.exchange(getUrl(), HttpMethod.POST, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), getResponseModel()).getBody();
+		responseEntity=restTemplate.exchange(getUrl(), HttpMethod.POST, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), getResponseModel());
+		return responseEntity.getBody();
 	}
 
 	public Response put() {
-		return restTemplate.exchange(getUrl(), HttpMethod.PUT, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), getResponseModel()).getBody();
+		responseEntity=restTemplate.exchange(getUrl(), HttpMethod.PUT, new HttpEntity<Request>(getRequestModel(), getHttpHeaders()), getResponseModel());
+		return responseEntity.getBody();
 	}
 
 	public void setUrl(final String path) {
@@ -107,4 +131,7 @@ public class RestCommand<Request, Response> {
 		this.headerDelegate = headerDelegate;
 	}
 
+	public HttpStatus getHttpStatus(){
+		return responseEntity.getStatusCode();
+	}
 }

@@ -1,4 +1,4 @@
-package com.cpn.apiomatic.generator.model.sql;
+package com.cpn.apiomatic.documentation.model.sql;
 
 public class Column {
 
