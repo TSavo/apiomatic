@@ -13,10 +13,15 @@ Step 3: Have a API Schema?
 Now you can generate the following:
 
 HTML Documentation... in any dialect.
+
 Clients of the API... in any programming language.
+
 Integration tests for the API which can be automated... or exported for unit testing suite.
+
 Example usages... in any language.
+
 API dummy stubs for testing your clients against... in any language.
+
 Example JSON... 
 
 ...which brings us back to step 1!
