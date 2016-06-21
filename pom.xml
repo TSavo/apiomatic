@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.cpn</groupId>
+	<groupId>com.github.tsavo</groupId>
 	<artifactId>apiomatic</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<properties>
@@ -10,6 +10,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+	<scm>
+		<connection>scm:git:git@github.com:tsavo/apiomatic.git</connection>
+		<developerConnection>scm:git:git@github.com:tsavo/apiomatic.git</developerConnection>
+		<url>git@github.com:tsavo/apiomatic.git</url>
+	</scm>
 	<build>
 		<plugins>
 			<plugin>
@@ -20,6 +25,25 @@
 					<source>1.7</source>
 					<target>1.7</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jarsigner-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<id>sign</id>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>verify</id>
+						<goals>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
