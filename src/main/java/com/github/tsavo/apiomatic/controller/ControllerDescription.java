@@ -16,6 +16,8 @@ import com.github.tsavo.apiomatic.documentation.model.TypeDefinitionFactory;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import javax.ws.rs.Path;
+
 @JsonInclude(Include.NON_NULL)
 public class ControllerDescription {
 	public List<String> urls;
@@ -74,6 +76,10 @@ public class ControllerDescription {
 				final RequestMapping requestMapping = (RequestMapping) annotation;
 				urls = Arrays.asList(requestMapping.value());
 			}
+			if(annotation instanceof Path){
+				final Path path = (Path) annotation;
+				urls = Arrays.asList(path.value());
+			}
 			if (annotation instanceof Documentation) {
 				documentation = ((Documentation) annotation).value();
 			}
@@ -81,7 +87,7 @@ public class ControllerDescription {
 		Method[] aMethods = aClazz.getMethods();
 		for (final Method aMethod : aMethods) {
 			for (final Annotation annotation : aMethod.getAnnotations()) {
-				if (annotation instanceof RequestMapping && !aMethod.getReturnType().equals(getClass())) {
+				if ((annotation instanceof Path || annotation instanceof RequestMapping) && !aMethod.getReturnType().equals(getClass())) {
 					methods.add(new ControllerMethodDescription(aMethod));
 					break;
 				}

@@ -3,6 +3,7 @@ package com.github.tsavo.apiomatic.controller;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +19,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.OPTIONS;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Request;
 
 @JsonInclude(Include.NON_NULL)
 public class ControllerMethodDescription {
@@ -87,9 +103,10 @@ public class ControllerMethodDescription {
 
 	TypeDefinition requestBody;
 	List<String> consumes;
-	List<String> headers;
-	List<RequestMethod> supportedMethods;
-	List<String> urlParams;
+	List<String> headers = new ArrayList<>();
+	List<RequestMethod> supportedMethods = new ArrayList<>();
+	List<String> urlParams = new ArrayList<>();
+    List<String> cookies = new ArrayList<>();
 	List<String> produces;
 	TypeDefinition responseBody;
 	List<String> urls;
@@ -119,6 +136,40 @@ public class ControllerMethodDescription {
 				urlParams = Arrays.asList(requestMapping.params());
 				continue;
 			}
+			if(annotation instanceof Path){
+				final Path path = (Path) annotation;
+				urls = Arrays.asList(path.value());
+			}
+			if(annotation instanceof Consumes){
+				final Consumes consumesAnnotation = (Consumes) annotation;
+				consumes = Arrays.asList(consumesAnnotation.value());
+			}
+			if(annotation instanceof Produces){
+				final Produces producesAnnotation = (Produces) annotation;
+				produces = Arrays.asList(producesAnnotation.value());
+			}
+			if(annotation instanceof GET){
+				supportedMethods.add(RequestMethod.GET);
+			}
+			if (annotation instanceof PUT) {
+				supportedMethods.add(RequestMethod.PUT);
+			}
+			if(annotation instanceof POST){
+				supportedMethods.add(RequestMethod.POST);
+			}
+			if(annotation instanceof DELETE){
+				supportedMethods.add(RequestMethod.DELETE);
+			}
+			if(annotation instanceof OPTIONS) {
+				supportedMethods.add(RequestMethod.OPTIONS);
+			}
+			if(annotation instanceof HEAD){
+				supportedMethods.add(RequestMethod.HEAD);
+			}
+			if(annotation instanceof HttpMethod){
+				final HttpMethod httpMethod = (HttpMethod) annotation;
+				supportedMethods.add(RequestMethod.valueOf(httpMethod.value()));
+			}
 			if (annotation instanceof Documentation) {
 				documentation = ((Documentation) annotation).value();
 			}
@@ -130,10 +181,22 @@ public class ControllerMethodDescription {
 			final Class<?> clazz = classes[x];
 			final Annotation[] annotations = parameterAnnotations[x];
 			for (final Annotation annotation : annotations) {
-				if (annotation instanceof RequestBody) {
+				if (annotation instanceof RequestBody || annotation instanceof Request) {
 					requestBody = TypeDefinitionFactory.getTypeDefinitionWithReference(clazz, types[x]);
 				}
-			}
+                if(annotation instanceof PathParam){
+                    final PathParam pathParam = (PathParam) annotation;
+                    urlParams.add(pathParam.value());
+                }
+                if(annotation instanceof HeaderParam){
+                    final HeaderParam headerParam = (HeaderParam) annotation;
+                    headers.add(headerParam.value());
+                }
+                if(annotation instanceof CookieParam){
+                    final CookieParam cookieParam = (CookieParam) annotation;
+                    cookies.add(cookieParam.value());
+                }
+            }
 		}
 		responseBody = TypeDefinitionFactory.getTypeDefinitionWithReference(aMethod.getReturnType(), aMethod.getGenericReturnType());
 		

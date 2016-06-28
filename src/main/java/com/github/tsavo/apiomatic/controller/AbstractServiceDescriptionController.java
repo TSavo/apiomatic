@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.ws.rs.Path;
+
 
 public class AbstractServiceDescriptionController implements ApplicationContextAware {
 
@@ -26,11 +28,11 @@ public class AbstractServiceDescriptionController implements ApplicationContextA
 		context = aContext;
 	}
 
-	@RequestMapping(method = { RequestMethod.GET, RequestMethod.OPTIONS })
+	//@RequestMapping(method = { RequestMethod.GET, RequestMethod.OPTIONS })
 	public @ResponseBody
 	List<ServiceDescription> getServiceList() {
 		List<ServiceDescription> results = new ArrayList<>();
-		for (Entry<String, Object> e : context.getBeansWithAnnotation(Controller.class).entrySet()) {
+		for (Entry<String, Object> e : context.getBeansWithAnnotation(Path.class).entrySet()) {
 			results.add(new ServiceDescription(e.getKey(), ClassUtils.getUserClass(e.getValue().getClass())));
 		}
 		return results;
