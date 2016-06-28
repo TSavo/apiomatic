@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.tsavo</groupId>
 	<artifactId>apiomatic</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
     <name>API-O-Matic</name>
     <description>Round trip API tooling for Java with Spring and Hibernate</description>
