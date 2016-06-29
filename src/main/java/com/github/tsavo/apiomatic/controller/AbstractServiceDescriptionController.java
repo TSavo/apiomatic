@@ -15,11 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
 
 public class AbstractServiceDescriptionController implements ApplicationContextAware {
-
 	@Autowired
 	ApplicationContext context;
 
@@ -28,7 +30,10 @@ public class AbstractServiceDescriptionController implements ApplicationContextA
 		context = aContext;
 	}
 
-	//@RequestMapping(method = { RequestMethod.GET, RequestMethod.OPTIONS })
+	@RequestMapping(method = { RequestMethod.GET, RequestMethod.OPTIONS })
+	@Path("/")
+	@GET
+	@OPTIONS
 	public @ResponseBody
 	List<ServiceDescription> getServiceList() {
 		List<ServiceDescription> results = new ArrayList<>();
@@ -39,8 +44,11 @@ public class AbstractServiceDescriptionController implements ApplicationContextA
 	}
 
 	@RequestMapping(value = "/{name}", method = { RequestMethod.GET, RequestMethod.OPTIONS })
+	@Path("/{name}")
+	@GET
+	@OPTIONS
 	public @ResponseBody
-	ControllerDescription getRestControllerForClass(@PathVariable("name") String aName) {
+	ControllerDescription getRestControllerForClass(@PathVariable("name") @PathParam("name") String aName) {
 		return new ControllerDescription(ClassUtils.getUserClass(context.getBean(aName).getClass()));
 	}
 

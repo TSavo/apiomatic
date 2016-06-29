@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.tsavo</groupId>
 	<artifactId>apiomatic</artifactId>
-	<version>1.0.2-SNAPSHOT</version>
+	<version>1.0.3</version>
 	<packaging>jar</packaging>
     <name>API-O-Matic</name>
     <description>Round trip API tooling for Java with Spring and Hibernate</description>
@@ -23,8 +23,8 @@
 		</developer>
 	</developers>
 	<properties>
-		<spring.version>4.1.6.RELEASE</spring.version>
-		<spring-security.version>4.1.6.RELEASE</spring-security.version>
+		<spring.version>4.2.4.RELEASE</spring.version>
+		<spring-security.version>4.2.4.RELEASE</spring-security.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -151,8 +151,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
-			<artifactId>hibernate-jpa-2.0-api</artifactId>
-			<version>1.0.1.Final</version>
+			<artifactId>hibernate-jpa-2.1-api</artifactId>
+			<version>1.0.0.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-httpclient</groupId>
